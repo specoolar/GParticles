@@ -1,0 +1,40 @@
+#pragma kernel Init
+#pragma kernel Solve
+
+struct Particle {
+    float3 position;
+    float3 velocity;
+    float4 color;
+};
+
+RWStructuredBuffer<Particle> particles;
+float deltaTime;
+uint particleCount;
+
+[numthreads(64,1,1)]
+void Init (uint3 id : SV_DispatchThreadID){
+    //Particle pt = particles[id.x];
+    //pt.color = float4(cos(id.x*0.1),0.1,0.1,1);
+    //particles[id.x] = pt;
+}
+
+
+[numthreads(64,1,1)]
+void Solve (uint3 id : SV_DispatchThreadID){
+    Particle pt = particles[id.x];
+
+    /// Physics
+    pt.position += pt.velocity * deltaTime;
+    pt.velocity.y -= 3*deltaTime;
+    pt.velocity /= 1 + deltaTime * 2;
+
+    /// Floor
+    float floor_height = 0;
+
+    if(pt.position.y < floor_height){
+        pt.position.y = floor_height;
+        pt.velocity.y = abs(pt.velocity.y)*0.2;
+    }
+
+    particles[id.x] = pt;
+}
